@@ -10,20 +10,40 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
     />
+    <style>
+      pre, code {
+        all: unset ;
+      }
+
+      #editor {
+        position: relative;
+        width: 80%;
+        height: 80%;
+      }
+    </style>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script>
+        // Setup code highlighting
+        hljs.highlightAll();
+
+        // Create the go object
         const go = new Go();
         WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
           go.run(result.instance);
         });
         
         function decode() {
-          var yaml = decodeEtcdData(document.getElementById("base64TextArea").value)
-          document.getElementById("yamlTextArea").value = yaml
+          var yaml = decodeEtcdData(ace.edit("base64Editor").getValue())
+          ace.edit("yamlEditor").setValue(yaml)
         }
         
         function encode() {
-          var base64 = encodeEtcdData(document.getElementById("yamlTextArea").value)
-          document.getElementById("base64TextArea").value = base64
+          var base64 = encodeEtcdData(ace.edit("yamlEditor").getValue())
+          ace.edit("base64Editor").setValue(base64)
         }
     </script>
   </head>
@@ -51,30 +71,58 @@
     <section class="section">
       <div class="fixed-grid has-2-cols mr-6 ml-6">
         <div class="grid">
-          <div class="cell">
+          <div class="cell has-text-centered">
             <h1 class="title is-4">Base64</h1>
-            <textarea
-              id="base64TextArea"
-              class="textarea"
-              placeholder="Paste your base64 encoded etcd object here (etcdctl get /registry/blahblah | base64):"
-              rows="20"
-            ></textarea>
+            <div id="base64Editor" class="box container is-widescreen"></div>
             </br>
             <button class="button" onclick="decode()">Convert to YAML</button>
           </div>
-          <div class="cell">
+
+          <div class="cell has-text-centered ">
             <h1 class="title is-4">YAML</h1>
-            <textarea
-              id="yamlTextArea"
-              class="textarea"
-              placeholder="Paste your yaml here to get a base64 encoded etcd object which you can use like this: (echo 'base64here' | base64 --decode | etcdctl put /registry/blah/blah)"
-              rows="20"
-            ></textarea>
+            <div id="yamlEditor" class="box container is-widescreen"></div>
             </br>
             <button class="button" onclick="encode()" >Convert to Base64</button>
+          </div>
+
+          <br>
+
+          <div class="cell is-col-span-2 content">
+            <h3 class="title is-3">How to use:</h3>
+            <h5 class="title is-5">Decoding:</h5>
+            <p>To decode an etcd value, pipe it to the base64 utility on linux and and paste in the base64 box: </p>
+            <pre><code class="language-bash box">etcdctl get /registry/blahblah | base64</code></pre>
+            <h5 class="title is-5">Encoding:</h5>
+            <p>To encode and set an etcd value, edit or paste it in the yaml box and use etcdctl to set it: </p>
+            <pre><code class="language-bash box">echo 'base64here' | base64 --decode | etcdctl put /registry/blah/blah</code></pre>
           </div>
         </div>
       </div>
     </section>
   </body>
+
+<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.37.1/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+  // Setup ace editor for YAML
+  var yamlEditor = ace.edit("yamlEditor",{
+    theme: "ace/theme/one_dark",
+    mode: "ace/mode/yaml",
+    maxLines: 30, 
+    minLines: 20,
+    autoScrollEditorIntoView: true,
+  });
+  yamlEditor.setShowPrintMargin(false);
+  document.getElementById('yamlEditor').style.fontSize='17px';
+
+  // Setup ace editor for base64
+  var base64Editor = ace.edit("base64Editor",{
+    theme: "ace/theme/one_dark",
+    mode: "ace/mode/text",
+    maxLines: 30, 
+    minLines: 20,
+    autoScrollEditorIntoView: true,
+  });
+  base64Editor.setShowPrintMargin(false);
+  document.getElementById('base64Editor').style.fontSize='17px';
+</script>
 </html>
