@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <title>Etcd Decoder</title>
+    <meta charset="utf-8" />
+    <script src="wasm_exec.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="./css/bulma.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <script>
+        const go = new Go();
+        WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+          go.run(result.instance);
+        });
+        
+        function decode() {
+          var yaml = decodeEtcdData(document.getElementById("base64TextArea").value)
+          document.getElementById("yamlTextArea").value = yaml
+        }
+        
+        function encode() {
+          var base64 = encodeEtcdData(document.getElementById("yamlTextArea").value)
+          document.getElementById("base64TextArea").value = base64
+        }
+    </script>
+  </head>
+
+  <body>
+    <section class="section">
+      <div>
+        <h1 class="title">
+          ETCD Decoder
+          <a href="https://github.com/rafayahmed337/etcddecoder"
+            ><i class="fa fa-github"></i
+          ></a>
+        </h1>
+        <p class="subtitle">
+          Made with the help of
+          <span class="subtitle is-underlined"
+            ><strong
+              ><a href="https://github.com/etcd-io/auger">auger</a></strong
+            ></span
+          >
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="fixed-grid has-2-cols mr-6 ml-6">
+        <div class="grid">
+          <div class="cell">
+            <h1 class="title is-4">Base64</h1>
+            <textarea
+              id="base64TextArea"
+              class="textarea"
+              placeholder="Paste your base64 encoded etcd object here (etcdctl get /registry/blahblah | base64):"
+              rows="20"
+            ></textarea>
+            </br>
+            <button class="button" onclick="decode()">Convert to YAML</button>
+          </div>
+          <div class="cell">
+            <h1 class="title is-4">YAML</h1>
+            <textarea
+              id="yamlTextArea"
+              class="textarea"
+              placeholder="Paste your yaml here to get a base64 encoded etcd object which you can use like this: (echo 'base64here' | base64 --decode | etcdctl put /registry/blah/blah)"
+              rows="20"
+            ></textarea>
+            </br>
+            <button class="button" onclick="encode()" >Convert to Base64</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
