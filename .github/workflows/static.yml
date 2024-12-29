@@ -42,7 +42,7 @@ jobs:
       - name: Build WebAssembly binary
         run: |
           mkdir -p dist
-          GOOS=js GOARCH=wasm go build -o dist/main.wasm main.go
+          GOOS=js GOARCH=wasm go build -o main.wasm main.go
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
